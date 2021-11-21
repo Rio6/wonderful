@@ -1,0 +1,10 @@
+#!/bin/sh -e
+arcan="$HOME/code/arcan"
+awesome="$HOME/code/awesome"
+wonderful="$HOME/code/wonderful"
+
+export PATH="$arcan/build:$PATH"
+export LUA_PATH="$wonderful/shims/?.lua;$awesome/lib/?.lua;$awesome/lib/?/init.lua;/usr/share/lua/5.1/?.lua;$LUA_PATH"
+export LUA_CPATH="/usr/lib/lua/5.1/?.so;$LUA_CPATH"
+
+exec arcan -B "$arcan/build" -T "$arcan"/data/scripts/ -p "$arcan"/data/resources -L "$wonderful" "$wonderful"
