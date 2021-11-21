@@ -7,4 +7,7 @@ export PATH="$arcan/build:$PATH"
 export LUA_PATH="$wonderful/shims/?.lua;$awesome/lib/?.lua;$awesome/lib/?/init.lua;/usr/share/lua/5.1/?.lua;$LUA_PATH"
 export LUA_CPATH="/usr/lib/lua/5.1/?.so;$LUA_CPATH"
 
-exec arcan -B "$arcan/build" -T "$arcan"/data/scripts/ -p "$arcan"/data/resources -L "$wonderful" "$wonderful"
+args=-g\ -g\ -B\ "$arcan/build/arcan_frameserver"\ -T\ "$arcan"/data/scripts/\ -p\ "$arcan"/data/resources\ -L\ "$wonderful"\ "$wonderful"
+
+exec arcan $args
+#gdb arcan -ex "set args $(args)"
