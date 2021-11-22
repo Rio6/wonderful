@@ -3,10 +3,7 @@
 #include <lauxlib.h>
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
-
-#include <platform/platform_types.h>
 
 int wonderful_openlibs(lua_State *L) {
    lua_newtable(L);
