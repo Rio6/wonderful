@@ -29,11 +29,10 @@ int wonderful_setenv(lua_State *L) {
 
    if(lua_isnil(L, -1)) {
       unsetenv(name);
-      return 0;
+   } else {
+      const char *value = lua_tostring(L, -1);
+      setenv(name, value, true);
    }
-
-   const char *value = lua_tostring(L, -1);
-   setenv(name, value, true);
 
    lua_pop(L, 2);
    return 0;

@@ -7,16 +7,6 @@ local client, meta = awesome._shim_fake_class()
 
 rawset(client, "_autotags", true)
 
--- Keep an history of the geometry for validation and images
-local function push_geometry(c)
-    table.insert(c._old_geo, c:geometry())
-end
-
--- Undo the last move, but keep it in history
--- local function pop_geometry(c)
---     CURRENTLY UNUSED
--- end
-
 local function titlebar_meta(c)
     for _, position in ipairs {"top", "bottom", "left", "right" } do
         c["titlebar_"..position] = function(size) --luacheck: no unused
@@ -68,20 +58,23 @@ function properties:get_first_tag()
     return self:tags()[1]
 end
 
--- Create fake clients to move around
-function client.gen_fake(args)
+-- Create clients
+function client.add_client(args)
     local ret = gears_obj()
     awesome._forward_class(ret, client)
 
     ret._private = {}
-    ret.type = "normal"
+    ret.type = args and args.type or "normal"
     ret.valid = true
     ret.size_hints = {}
     ret._border_width = 1
     ret._tags = args and args.tags or nil
     ret.icon_sizes = {{16,16}}
-    ret.name = "Example Client"
+    ret.name = args and args.name or "Example Client"
     ret._private._struts = { top = 0, right = 0, left = 0, bottom = 0 }
+    ret.vid = args and args.vid
+
+    assert(ret.vid ~= nil)
 
     --TODO v5: remove this. This was a private API and thus doesn't need to be
     -- officially deprecated.
@@ -114,12 +107,14 @@ function client.gen_fake(args)
         } or nil
 
         if new and not grect.are_equal(ret, new_full) then
+            target_displayhint(ret.vid, new_full.width, new_full.height)
+            move_image(ret.vid, new_full.x, new_full.y)
+
             for k,v in pairs(new) do
                 ret[k] = v
                 ret:emit_signal("property::"..k, v)
             end
             ret:emit_signal("property::geometry", ret:geometry())
-            push_geometry(ret)
         end
 
         return {
@@ -141,22 +136,6 @@ function client.gen_fake(args)
         end
 
         return vis
-    end
-
-    -- Used for screenshots
-    function ret:set_label(text)
-        ret._old_geo[#ret._old_geo]._label = text
-    end
-
-    -- Used for screenshots, hide the current client position
-    function ret:_hide()
-        ret._old_geo[#ret._old_geo]._hide = true
-    end
-
-    function ret:_hide_all()
-        for _, geo in ipairs(ret._old_geo) do
-            geo._hide = true
-        end
     end
 
     function ret:get_xproperty()
@@ -255,9 +234,6 @@ function client.gen_fake(args)
         return ret._private._struts
     end
 
-    -- Set a dummy one for now since set_screen will corrupt it.
-    ret._old_geo = {}
-
     -- Set the screen attributes.
     local s = args.screen
 
@@ -282,11 +258,6 @@ function client.gen_fake(args)
     for _, v in ipairs{"x","y","width","height"} do
         ret[v] = args[v] or ret[v]
     end
-
-    -- Record the geometry
-    ret._old_geo = {}
-    push_geometry(ret)
-    ret._old_geo[1]._hide = args.hide_first
 
     -- Good enough for the geometry and border
     ret.drawin = ret

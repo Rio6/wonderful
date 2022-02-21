@@ -125,8 +125,8 @@ function awesome.spawn(cmd, use_sn, use_stdin, use_stdout, use_stderr, exit_call
 end
 
 function awesome.start()
-   system_load("rc.lua")()
-   awesome.startup = false
+    dofile(awesome.conffile)
+    awesome.startup = false
 end
 
 -- SVG are composited. Without it we need a root surface

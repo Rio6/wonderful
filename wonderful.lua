@@ -27,11 +27,16 @@ local conn_point = "wonderful"
 function wonderful()
    target_alloc(conn_point, client_event_handler)
    util.setenv("ARCAN_CONNPATH", conn_point)
+
+   screen.add_screen(0, 0, VRESW, VRESH)
+   screen.primary = screen[1]
+
    awesome.start()
 end
 
 function wonderful_clock_pulse()
    glib.MainContext.default():iteration(false)
+   awesome.emit_signal("refresh")
 end
 
 function client_event_handler(source, status)
@@ -45,6 +50,14 @@ function client_event_handler(source, status)
       target_alloc(conn_point, client_event_handler)
 
    elseif status.kind == "registered" then
+      client.add_client {
+         vid = source,
+         screen = screen.primary,
+         x = 0,
+         y = 0,
+         width = VRESW,
+         height = VRESH,
+      }
       show_image(source)
 
    elseif status.kind == "preroll" then
@@ -58,5 +71,12 @@ function client_event_handler(source, status)
          end
          link_image(vid, source)
       end
+   end
+end
+
+function wonderful_input(input)
+   local c = client.focus
+   if c ~= nil then
+      target_input(c.vid, input)
    end
 end

@@ -4,6 +4,7 @@ local grect = require("gears.geometry").rectangle
 
 local screen, meta = awesome._shim_fake_class()
 screen._count, screen._deleted = 0, {}
+screen._track_workarea = false
 
 local function get_drawin_screen(s, d)
     return grect.area_intersect_area (s.geometry, {
@@ -249,20 +250,11 @@ function screen._viewports()
     return {}
 end
 
-function screen.fake_add(x,y,width,height)
+function screen.add_screen(x,y,width,height)
     return screen._add_screen {
         x=x,y=y,width=width,height=height
     }
 end
-
-screen._add_screen {width=320, height=240}
-
-screen._grid_vertical_margin = 10
-screen._grid_horizontal_margin = 10
-
-screen.primary = screen[1]
-
-screen._track_workarea = false
 
 function screen.count()
     return screen._count
