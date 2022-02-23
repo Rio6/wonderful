@@ -1,7 +1,9 @@
 local util = system_load("util.so")
-
 util.openlibs()
 
+local glib = require("lgi").GLib
+
+local conn_point = "wonderful"
 local capi = {
     "awesome",
     "root",
@@ -21,9 +23,6 @@ for _, name in ipairs(capi) do
    _G[name] = require(name)
 end
 
-local glib = require("lgi").GLib
-local conn_point = "wonderful"
-
 function wonderful()
    target_alloc(conn_point, client_event_handler)
    util.setenv("ARCAN_CONNPATH", conn_point)
@@ -41,6 +40,10 @@ end
 
 function client_event_handler(source, status)
    if status.kind == "terminated" then
+      c = client.from_vid(source)
+      if c ~= nil then
+         c:kill()
+      end
       delete_image(source)
 
    elseif status.kind == "resized" then

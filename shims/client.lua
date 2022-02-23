@@ -167,9 +167,10 @@ function client.add_client(args)
 
         for k, c in ipairs(clients) do
             if c == ret then
-                ret:emit_signal("unmanaged", c)
-                ret.valid = false
                 table.remove(clients, k)
+                ret.valid = false
+                ret:emit_signal("unmanaged", c)
+                client.emit_signal("list")
                 break
             end
         end
@@ -291,7 +292,7 @@ function client.add_client(args)
     end
 
     -- Add to the client list
-    table.insert(clients, ret)
+    table.insert(clients, 1, ret)
 
     client.focus = ret
 
@@ -321,6 +322,7 @@ function client.add_client(args)
         end
     })
 
+    client.emit_signal("list")
     client.emit_signal("request::manage", ret)
 
     --TODO v6 remove this.
@@ -346,6 +348,33 @@ function client.get(s)
 
     return ret
 end
+
+function client.from_vid(vid)
+    for k, c in ipairs(clients) do
+        if c.vid == vid then
+            return c
+        end
+    end
+    return nil
+end
+
+function client.update_focus()
+    if client.focus and client.focus.valid and client.focus.focusable then
+        return
+    end
+    for _, t in ipairs(root:tags()) do
+        if t.selected then
+            for _, c in ipairs(clients) do
+                if c.valid and c.focusable then
+                    client.focus = c
+                    return
+                end
+            end
+        end
+    end
+end
+
+client.connect_signal("unmanaged", client.update_focus)
 
 return client
 
