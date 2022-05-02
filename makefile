@@ -1,6 +1,9 @@
 ARCAN=$(HOME)/code/arcan
-TARGET=util.so
-INCLUDES=-I$(ARCAN)/external/lua/
+AWESOME=$(HOME)/code/awesome
+TARGET=wonderful.so
+DEPS=gdk-pixbuf-2.0 cairo
+INCS=$(shell pkg-config --cflags $(DEPS)) -I$(AWESOME)
+LIBS=$(shell pkg-config --libs $(DEPS))
 
 .PHONY: all
 all: $(TARGET)
@@ -10,4 +13,4 @@ clean:
 	$(RM) $(TARGET)
 
 %.so: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -shared $< -o $@
+	$(CC) $(CFLAGS) $(INCS) $(LIBS) -shared $< -o $@

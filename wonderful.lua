@@ -1,6 +1,3 @@
-local util = system_load("util.so")
-util.openlibs()
-
 local glib = require("lgi").GLib
 
 local conn_point = "wonderful"
@@ -19,13 +16,15 @@ local capi = {
     "key",
 }
 
-for _, name in ipairs(capi) do
-   _G[name] = require(name)
-end
-
 function wonderful()
+   wonderful = system_load("wonderful.so")
+
+   for _, name in ipairs(capi) do
+      _G[name] = require(name)
+   end
+
    target_alloc(conn_point, client_event_handler)
-   util.setenv("ARCAN_CONNPATH", conn_point)
+   wonderful.setenv("ARCAN_CONNPATH", conn_point)
 
    screen.add_screen(0, 0, VRESW, VRESH)
    screen.primary = screen[1]
@@ -53,7 +52,7 @@ function client_event_handler(source, status)
       target_alloc(conn_point, client_event_handler)
 
    elseif status.kind == "registered" then
-      client.add_client {
+      client.manage {
          vid = source,
          screen = screen.primary,
          x = 0,
@@ -65,15 +64,6 @@ function client_event_handler(source, status)
 
    elseif status.kind == "preroll" then
       target_displayhint(source, VRESW, VRESH, TD_HINT_IGNORE, {ppcm = VPPCM})
-
-   elseif status.kind == "segment_request" then
-      if status.segkind == "clipboard" then
-         local vid = accept_target(clipboard_handler)
-         if not valid_vid(vid) then
-            return
-         end
-         link_image(vid, source)
-      end
    end
 end
 

@@ -59,7 +59,7 @@ function properties:get_first_tag()
 end
 
 -- Create clients
-function client.add_client(args)
+function client.manage(args)
     local ret = gears_obj()
     awesome._forward_class(ret, client)
 

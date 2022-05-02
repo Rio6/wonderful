@@ -58,7 +58,7 @@ local awesome = _shim_fake_class()
 awesome._shim_fake_class = _shim_fake_class
 awesome._forward_class = forward_class
 
-awesome.version   = "4"
+awesome.version   = "4.3"
 awesome.api_level = 4
 awesome.themes_path = "/usr/share/awesome/themes"
 awesome.icons_path = "/usr/share/awesome/icons"
@@ -68,11 +68,13 @@ awesome.startup = true
 function awesome.register_xproperty()
 end
 
-awesome.load_image = lgi.cairo.ImageSurface.create_from_png
-
-function awesome.pixbuf_to_surface(_, path)
-    return awesome.load_image(path)
+function awesome.load_image(path)
+    local buf, err = lgi.GdkPixBuf.Pixbuf.new_from_file(path)
+    if buf == nil then return nil, err.message end
+    return wonderful.pixbuf_to_surface(buf)
 end
+
+awesome.pixbuf_to_surface = wonderful.pixbuf_to_surface
 
 function awesome.xrdb_get_value()
     return nil
@@ -129,35 +131,9 @@ function awesome.start()
     awesome.startup = false
 end
 
--- SVG are composited. Without it we need a root surface
 awesome.composite_manager_running = true
 
-awesome._modifiers = {
-     Shift = {
-          {keycode = 50 , keysym = 'Shift_L'    },
-          {keycode = 62 , keysym = 'Shift_R'    },
-     },
-     Lock = {},
-     Control = {
-          {keycode = 37 , keysym = 'Control_L'  },
-          {keycode = 105, keysym = 'Control_R'  },
-     },
-     Mod1 = {
-          {keycode = 64 , keysym = 'Alt_L'      },
-          {keycode = 108, keysym = 'Alt_R'      },
-     },
-     Mod2 = {
-          {keycode = 77 , keysym = 'Num_Lock'   },
-     },
-     Mod3 = {},
-     Mod4 = {
-          {keycode = 133, keysym = 'Super_L'    },
-          {keycode = 134, keysym = 'Super_R'    },
-     },
-     Mod5 = {
-          {keycode = 203, keysym = 'Mode_switch'},
-     },
-}
+awesome._modifiers = {}
 
 function awesome._get_key_name(key)
     return key
