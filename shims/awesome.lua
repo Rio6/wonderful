@@ -81,9 +81,10 @@ function awesome.xrdb_get_value()
 end
 
 function awesome.spawn(cmd, use_sn, use_stdin, use_stdout, use_stderr, exit_callback, envp)
+    local flags = { "SEARCH_PATH", "CLOEXEC_PIPES" }
+
     if exit_callback ~= nil then
-        -- TODO
-        --flags |= G_SPAWN_DO_NOT_REAP_CHILD;
+        table.insert(flags, "DO_NOT_REAP_CHILD")
     end
 
     if type(cmd) == "string" then
@@ -102,20 +103,25 @@ function awesome.spawn(cmd, use_sn, use_stdin, use_stdout, use_stderr, exit_call
     end
 
     if use_sn then
-        -- not supported
+        -- TODO
     end
 
-    local flags = lgi.GLib.SpawnFlags { "SEARCH_PATH", "CLOEXEC_PIPES" }
-    local pid, stdin, stdout, stderr = lgi.GLib.spawn_async_with_pipes(nil, argv, envp, flags)
+    local pid, stdin, stdout, stderr = lgi.GLib.spawn_async_with_pipes(nil, argv, envp, lgi.GLib.SpawnFlags(flags))
     if pid == false then
-        return tostring(stdin)
+        return stdin.message
     end
 
-    if lgi.GLib.SpawnFlags[flags].DO_NOT_REAP_CHILD then
-        --/* Only do this down here to avoid leaks in case of errors */
-        --running_child_t child = { .pid = pid, .exit_callback = LUA_REFNIL };
-        --luaA_registerfct(L, 6, &child.exit_callback);
-        --running_child_array_insert(&running_children, child);
+    if exit_callback ~= nil then
+        lgi.GLib.child_watch_add(lgi.GLib.PRIORITY_DEFAULT, pid, function(_, status)
+            lgi.GLib.spawn_close_pid(pid)
+
+            local success, err = lgi.GLib.spawn_check_wait_status(status)
+            if success or err.domain == lgi.GLib.SPAWN_EXIT_ERROR then
+                exit_callback("exit", success and status or err.code)
+            else
+                exit_callback("signal", status)
+            end
+        end)
     end
 
     -- TODO figure out how to pass null to spawn_async_with_pipes
