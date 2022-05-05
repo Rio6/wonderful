@@ -72,9 +72,9 @@ function client.manage(args)
     ret.icon_sizes = {{16,16}}
     ret.name = args and args.name or "Example Client"
     ret._private._struts = { top = 0, right = 0, left = 0, bottom = 0 }
-    ret.vid = args and args.vid
+    ret.window = args and args.window
 
-    assert(ret.vid ~= nil)
+    assert(ret.window ~= nil)
 
     --TODO v5: remove this. This was a private API and thus doesn't need to be
     -- officially deprecated.
@@ -107,8 +107,8 @@ function client.manage(args)
         } or nil
 
         if new and not grect.are_equal(ret, new_full) then
-            target_displayhint(ret.vid, new_full.width, new_full.height)
-            move_image(ret.vid, new_full.x, new_full.y)
+            target_displayhint(ret.window, new_full.width, new_full.height)
+            move_image(ret.window, new_full.x, new_full.y)
 
             for k,v in pairs(new) do
                 ret[k] = v
@@ -351,7 +351,7 @@ end
 
 function client.from_vid(vid)
     for k, c in ipairs(clients) do
-        if c.vid == vid then
+        if c.window == vid then
             return c
         end
     end

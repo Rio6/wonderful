@@ -53,7 +53,7 @@ function client_event_handler(source, status)
 
    elseif status.kind == "registered" then
       client.manage {
-         vid = source,
+         window = source,
          screen = screen.primary,
          x = 0,
          y = 0,
@@ -68,8 +68,5 @@ function client_event_handler(source, status)
 end
 
 function wonderful_input(input)
-   local c = client.focus
-   if c ~= nil then
-      target_input(c.vid, input)
-   end
+   root.handle_event(input)
 end
