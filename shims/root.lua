@@ -17,6 +17,7 @@ local mod_maps = {
     caps = "Lock",
     mode = "Mode",
 }
+local mods = {}
 
 function root:tags()
     return root._tags
@@ -45,10 +46,20 @@ function root.cursor() end
 -- GLOBAL KEYBINDINGS --
 
 local keys = {}
+local buttons = {}
 
 function root.keys(k)
     keys = k or keys
     return keys
+end
+
+function root.buttons(b)
+    buttons = b or buttons
+    return buttons
+end
+
+function root.has_button(b)
+    return gtable.hasitem(buttons, b)
 end
 
 -- FAKE INPUTS --
@@ -65,7 +76,7 @@ local function match_modifiers(mods1, mods2)
     return true
 end
 
-local function execute_keybinding(key, mods, event)
+local function execute_keybinding(key, event)
     for _, v in ipairs(keys) do
         if key == v.key and match_modifiers(v.modifiers, mods) then
             v:emit_signal(event)
@@ -74,12 +85,17 @@ local function execute_keybinding(key, mods, event)
     end
 end
 
-function root.fake_input(event_type, detail, x, y)
-    -- TODO
+local function execute_button(button, event)
+    for _, v in ipairs(buttons) do
+        if button == v.button and match_modifiers(v.modifiers, mods) then
+            v:emit_signal(event)
+            return
+        end
+    end
 end
 
-function root.buttons()
-    return {}
+function root.fake_input(event_type, detail, x, y)
+    -- TODO
 end
 
 function root._wallpaper(pattern)
@@ -112,23 +128,27 @@ end
 function root.handle_event(eve)
     local handled
     if eve.kind == "digital" then
-        if eve.translated then -- keyboard
-            local action = eve.active and "press" or "release"
-            local key = keyboard[eve.keysym]
-            local mods = {}
+        local action = eve.active and "press" or "release"
 
+        if eve.translated then -- keyboard
+            mods = {}
             for _, mod in ipairs(decode_modifiers(eve.modifiers)) do
                 table.insert(mods, select(1, mod_maps[mod]))
             end
 
+            local key = keyboard[eve.keysym]
             if keygrabber._current_grabber then
                 keygrabber._current_grabber(mods, key, action)
                 handled = true
             else
-                handled = execute_keybinding(key, mods, action)
+                handled = execute_keybinding(key, action)
             end
+
+        else -- button
+            handled = execute_button(eve.subid, action)
         end
     end
+
     if not handled and client.focus ~= nil then
         target_input(client.focus.window, eve)
     end

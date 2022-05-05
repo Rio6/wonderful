@@ -9,11 +9,11 @@ local capi = {
     "client",
     "mouse",
     "drawin",
+    "key",
     "button",
     "keygrabber",
     "mousegrabber",
     "dbus",
-    "key",
 }
 
 function wonderful()

@@ -28,4 +28,13 @@ root.keys(
          end
       })
    end)
-   )
+)
+
+root.buttons(
+   awful.button({"Shift"}, 1, function()
+      print("pressed")
+   end,
+   function()
+      print("release")
+   end)
+)
